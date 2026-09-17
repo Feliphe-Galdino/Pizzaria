@@ -1,0 +1,4 @@
+Flask==3.1.*
+PyJWT==2.*
+python-dotenv==1.*
+gunicorn==23.*

@@ -1,0 +1,28 @@
+{
+  "name": "Romera & Romera Pizzaria",
+  "tagline": "A massa da padaria, agora no forno de pizza.",
+  "address": {
+    "street": "Rua das Oliveiras, 240",
+    "district": "Centro",
+    "city": "São Paulo",
+    "state": "SP",
+    "zip": "01000-000",
+    "maps_url": "https://maps.google.com/?q=Romera+%26+Romera+Pizzaria"
+  },
+  "phone": "(11) 3333-4444",
+  "email": "contato@romerapizzaria.com.br",
+  "social": {
+    "instagram": "https://instagram.com/romerapizzaria",
+    "facebook": "https://facebook.com/romerapizzaria"
+  },
+  "delivery_area": "Entregamos em até 5 km da loja.",
+  "average_times": { "delivery": "40–55 min", "pickup": "25–30 min" },
+  "hours": [
+    { "weekday": 1, "open": "18:00", "close": "23:00" },
+    { "weekday": 2, "open": "18:00", "close": "23:00" },
+    { "weekday": 3, "open": "18:00", "close": "23:00" },
+    { "weekday": 4, "open": "18:00", "close": "00:00" },
+    { "weekday": 5, "open": "17:30", "close": "00:30" },
+    { "weekday": 6, "open": "17:30", "close": "23:30" }
+  ]
+}

@@ -1,0 +1,47 @@
+/* Tokens da marca Romera & Romera Pizzaria
+   Vermelho e dourado vêm direto da logo da padaria; lousa, creme e manjericão vêm da fachada. */
+:root {
+  --molho: #9B2226;
+  --molho-escuro: #751A1D;
+  --molho-claro: #F6E1DC;
+  --trigo: #C8962E;
+  --trigo-claro: #E0A948;
+  --trigo-texto: #8A6214;      /* dourado com contraste AA sobre creme */
+  --lousa: #2B2420;
+  --lousa-2: #3A302A;
+  --massa: #FBF4E6;
+  --massa-2: #F3E7CF;
+  --papel: #FFFDF8;
+  --manjericao: #3F6B35;
+  --manjericao-claro: #E3EEDB;
+  --tinta: #2B2420;
+  --tinta-suave: #6B5D52;
+  --linha: #E4D5BA;
+
+  --font-marca: "Cinzel", "Trajan Pro", Charter, Georgia, serif;
+  --font-texto: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* Escala tipográfica (razão 1.25), fluida entre mobile e desktop */
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --fs-xl: clamp(1.6rem, 1.3rem + 1.2vw, 2.1rem);
+  --fs-2xl: clamp(2.1rem, 1.5rem + 2.8vw, 3.6rem);
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4.5rem;
+
+  /* Raios com hierarquia: placa (reto), cartão (médio), botão (pílula) */
+  --r-placa: 4px;
+  --r-card: 14px;
+  --r-pill: 999px;
+
+  --sombra-forno: 0 10px 30px -12px rgba(117, 26, 29, 0.45);
+  --sombra-placa: 0 18px 40px -24px rgba(43, 36, 32, 0.7);
+  --foco: 0 0 0 3px var(--papel), 0 0 0 6px var(--trigo);
+
+  --header-h: 64px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --max: 1180px;
+}
