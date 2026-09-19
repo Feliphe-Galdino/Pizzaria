@@ -8,6 +8,7 @@ import { pizzaSVG } from "./components/pizza-art.js";
 import { productCard } from "./components/product-card.js";
 import { openProductSheet } from "./components/product-sheet.js";
 import { renderStore } from "./components/store-info.js";
+import { initSupport } from "./components/support-widget.js";
 
 const menuEl = document.querySelector("[data-menu]");
 const navEl = document.querySelector("[data-category-nav]");
@@ -187,11 +188,12 @@ async function init() {
   window.addEventListener("popstate", openFromHash);
 
   const [storeResult, menuResult] = await Promise.allSettled([api("/store"), api("/menu")]);
+  const storeData = storeResult.status === "fulfilled" ? storeResult.value : null;
 
-  if (storeResult.status === "fulfilled") {
-    renderStore(storeResult.value);
-    initCart(storeResult.value);
-    setStore(storeResult.value);
+  if (storeData) {
+    renderStore(storeData);
+    initCart(storeData);
+    setStore(storeData);
   } else {
     initCart(null);
   }
@@ -205,6 +207,8 @@ async function init() {
     menuEl.innerHTML = `<div class="menu-empty">${icon("alert")}<h3>Não conseguimos carregar o cardápio</h3><p>${esc(menuResult.reason.message)}</p><button class="btn" type="button" data-retry>Tentar de novo</button></div>`;
     menuEl.querySelector("[data-retry]").addEventListener("click", () => location.reload());
   }
+
+  initSupport(storeData, menu);
 }
 
 init();

@@ -46,6 +46,7 @@
     <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21a6 6 0 0 0 6-6c0-4-3-6-4-10-2 2-2 4-2 5-1-1-2-2-2-4-2 2-4 5-4 9a6 6 0 0 0 6 6z"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></symbol>
   </svg>
 
   <a class="skip-link" href="#cardapio">Pular para o cardápio</a>
@@ -204,6 +205,10 @@
 
   <dialog class="sheet" id="product-sheet" aria-labelledby="pd-title"></dialog>
   <dialog class="sheet sheet--side" id="cart-sheet" aria-labelledby="cart-title"></dialog>
+  <dialog class="sheet sheet--side" id="support-sheet" aria-labelledby="support-title"></dialog>
+  <button class="fab fab--support" type="button" data-open-support aria-label="Abrir suporte">
+    <svg class="icon"><use href="#i-chat"/></svg>
+  </button>
   <div class="toast-region" aria-live="polite" aria-atomic="false" data-toasts></div>
 </body>
 </html>

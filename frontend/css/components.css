@@ -190,6 +190,30 @@ dialog.sheet::backdrop { background: rgba(43,36,32,.55); animation: fade .25s; }
   dialog.sheet--side[open] { animation: slide-in .32s var(--ease); }
 }
 
+/* ========== Suporte: botão flutuante + chat ========== */
+.fab {
+  position: fixed; right: 16px; bottom: calc(88px + env(safe-area-inset-bottom)); z-index: 45;
+  width: 56px; height: 56px; border-radius: 50%; border: 0; display: grid; place-items: center;
+  background: var(--molho); color: var(--papel); box-shadow: var(--sombra-forno); transition: transform .2s var(--ease);
+}
+.fab:hover { transform: scale(1.06); }
+.fab:active { transform: scale(.94); }
+.fab .icon { width: 26px; height: 26px; }
+@media (min-width: 900px) { .fab { bottom: 24px; } }
+
+.chat { display: grid; gap: var(--space-3); align-content: start; padding: var(--space-4); }
+.chat__bubble { max-width: 88%; padding: 10px 14px; border-radius: var(--r-card); font-size: var(--fs-sm); line-height: 1.45; }
+.chat__bubble--bot { justify-self: start; background: var(--massa-2); color: var(--tinta); border-bottom-left-radius: 4px; }
+.chat__bubble--user { justify-self: end; background: var(--molho); color: var(--papel); border-bottom-right-radius: 4px; }
+.chat__cta { display: flex; width: fit-content; margin-top: var(--space-3); }
+.chat__suggestions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chat__suggestions .chip { background: var(--papel); max-width: 100%; white-space: normal; text-align: left; height: auto; }
+.chip--wa { border-color: var(--manjericao); color: var(--manjericao); }
+.chat__form { display: flex; gap: var(--space-3); align-items: center; }
+.chat__form .input { flex: 1; }
+.chat__send { background: var(--molho); color: var(--papel); flex: none; }
+.chat__send:hover { background: var(--molho-escuro); }
+
 /* ========== Toast ========== */
 .toast-region { position: fixed; left: 50%; bottom: calc(88px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; display: grid; gap: 8px; width: min(92vw, 420px); pointer-events: none; }
 .toast { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: var(--lousa); color: var(--massa); box-shadow: var(--sombra-placa); font-weight: 600; animation: toast-in .3s var(--ease); pointer-events: auto; }
