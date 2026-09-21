@@ -208,7 +208,7 @@ async function init() {
     menuEl.querySelector("[data-retry]").addEventListener("click", () => location.reload());
   }
 
-  initSupport(storeData, menu);
+  initSupport(storeData);
 }
 
 init();

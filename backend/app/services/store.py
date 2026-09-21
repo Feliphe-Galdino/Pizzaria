@@ -52,6 +52,7 @@ def store_info() -> dict:
     data = dict(_load())
     cfg = current_app.config
     data["whatsapp"] = cfg["WHATSAPP_NUMBER"]
+    data["support_whatsapp"] = cfg["SUPPORT_WHATSAPP_NUMBER"]
     data["delivery_fee_cents"] = cfg["DELIVERY_FEE_CENTS"]
     data["min_order_cents"] = cfg["MIN_ORDER_CENTS"]
     data["hours"] = [{**h, "label": WEEKDAYS[h["weekday"]]} for h in data["hours"]]

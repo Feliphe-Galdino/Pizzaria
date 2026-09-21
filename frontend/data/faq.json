@@ -1,72 +1,62 @@
 [
   {
     "id": "horario",
-    "keywords": ["horario", "horário", "aberto", "abre", "fecha", "funciona", "funcionamento", "hoje"],
     "question": "Qual o horário de funcionamento?",
     "label": "Horário",
-    "quickReply": true,
     "answer": "{horario_hoje}. Você confere a semana completa na seção \"Horários e contato\", mais abaixo na página."
   },
   {
     "id": "entrega",
-    "keywords": ["entrega", "entregam", "delivery", "taxa", "frete", "area", "área", "raio", "minimo", "mínimo"],
     "question": "Vocês fazem entrega?",
     "label": "Entrega",
-    "quickReply": true,
     "answer": "Sim! {delivery_area} Taxa de entrega: {delivery_fee}. Pedido mínimo: {min_order}. Tempo médio: {delivery_time}."
   },
   {
     "id": "retirada",
-    "keywords": ["retirada", "retirar", "buscar", "balcao", "balcão"],
     "question": "Posso retirar no balcão?",
+    "label": "Retirada",
     "answer": "Pode sim! É só escolher \"Retirada\" no carrinho na hora de fechar o pedido. Tempo médio de preparo: {pickup_time}."
   },
   {
     "id": "pagamento",
-    "keywords": ["pagamento", "pagar", "pix", "cartao", "cartão", "dinheiro", "troco", "credito", "crédito", "debito", "débito"],
     "question": "Quais formas de pagamento vocês aceitam?",
     "label": "Pagamento",
-    "quickReply": true,
     "answer": "Aceitamos Pix, cartão (crédito ou débito) e dinheiro — se for pagar em dinheiro, é só informar o valor para troco ao montar o pedido."
   },
   {
     "id": "endereco",
-    "keywords": ["endereco", "endereço", "localizacao", "localização", "onde fica", "local", "rua"],
     "question": "Qual o endereço da loja?",
     "label": "Endereço",
-    "quickReply": true,
     "answer": "Estamos em {endereco}. {area_entrega} Você encontra o mapa na seção \"Horários e contato\"."
   },
   {
     "id": "acompanhar",
-    "keywords": ["acompanhar", "status", "rastrear", "codigo", "código", "meu pedido"],
     "question": "Como acompanho meu pedido?",
     "label": "Meu pedido",
-    "quickReply": true,
     "answer": "Na seção \"Horários e contato\", mais abaixo na página, tem o campo \"Acompanhar pedido\" — é só informar o código de 5 letras e o telefone usados no pedido."
   },
   {
-    "id": "como-pedir",
-    "keywords": ["como peco", "como peço", "como pedir", "fazer pedido", "novo pedido"],
-    "question": "Como eu faço um pedido?",
-    "answer": "É só escolher os sabores no cardápio aqui em cima, ajustar tamanho/borda/adicionais e finalizar no carrinho. Você escolhe entrega ou retirada na hora de fechar."
+    "id": "tamanhos",
+    "question": "Quais tamanhos de pizza vocês têm?",
+    "label": "Tamanhos",
+    "answer": "Cada sabor mostra as opções de tamanho e o número de fatias na hora de escolher, direto no cardápio."
   },
   {
-    "id": "historia",
-    "keywords": ["historia", "história", "quem sao", "quem são", "padaria", "origem"],
-    "question": "Qual a história da pizzaria?",
-    "answer": "A Romera & Romera nasceu atrás do balcão de uma padaria: usamos a mesma massa de fermentação natural de 48 horas nas nossas pizzas. Tem mais na seção \"Nossa história\"."
+    "id": "promocao",
+    "question": "Tem alguma promoção?",
+    "label": "Promoções",
+    "answer": "No momento não temos cupom fixo no site — fale com a gente no WhatsApp que confirmamos se há alguma condição especial."
   },
   {
     "id": "dieta",
-    "keywords": ["vegetariano", "vegetariana", "sem lactose"],
-    "question": "Tem opção vegetariana ou sem lactose?",
-    "answer": "Temos, sim! No cardápio, os itens vegetarianos e sem lactose vêm com uma etiqueta indicando isso — dá uma olhada nas tags de cada sabor."
+    "question": "Tem opção vegetariana, sem lactose ou para alergias?",
+    "label": "Alergias e dietas",
+    "answer": "Temos itens vegetarianos e sem lactose sinalizados no cardápio. Para alergias ou restrições mais sérias, fale com a gente pelo WhatsApp antes de pedir, para confirmarmos os ingredientes com segurança."
   },
   {
     "id": "redes",
-    "keywords": ["instagram", "facebook", "redes sociais", "rede social"],
     "question": "Vocês têm Instagram?",
+    "label": "Redes sociais",
     "answer": "{redes_sociais}"
   }
 ]

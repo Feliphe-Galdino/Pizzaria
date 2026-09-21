@@ -32,6 +32,8 @@ class Config:
     DELIVERY_FEE_CENTS = _int("DELIVERY_FEE_CENTS", 800)
     MIN_ORDER_CENTS = _int("MIN_ORDER_CENTS", 3000)
     WHATSAPP_NUMBER = os.getenv("WHATSAPP_NUMBER", "")
+    # Número exclusivo do suporte (widget do site). Se vazio, usa o WHATSAPP_NUMBER acima.
+    SUPPORT_WHATSAPP_NUMBER = os.getenv("SUPPORT_WHATSAPP_NUMBER", "") or WHATSAPP_NUMBER
     TIMEZONE = os.getenv("STORE_TIMEZONE", "America/Sao_Paulo")
 
     CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
