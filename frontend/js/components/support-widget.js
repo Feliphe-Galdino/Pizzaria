@@ -8,9 +8,11 @@ let faq = [];
 let store = null;
 let turns = [];
 let isOpen = false;
-let loaded = false;
+let faqLoaded = false;
 
-async function loadFaq() {
+async function loadFaqOnce() {
+  if (faqLoaded) return;
+  faqLoaded = true;
   try {
     const res = await fetch("/data/faq.json");
     faq = res.ok ? await res.json() : [];
@@ -19,9 +21,30 @@ async function loadFaq() {
   }
 }
 
-function waLink(text) {
+/** Se o carregamento inicial da página não trouxe os dados da loja (ex.: rede lenta
+ *  naquele momento), tenta de novo a cada abertura — sem isso o botão de contato
+ *  ficaria escondido à toa mesmo com a loja configurada corretamente. */
+async function ensureStore() {
+  if (store) return;
+  try {
+    const res = await fetch("/api/store");
+    if (res.ok) store = await res.json();
+  } catch {
+    /* sem conexão agora; tenta de novo na próxima abertura */
+  }
+}
+
+/** Prefere WhatsApp do suporte; cai para o WhatsApp geral, depois telefone da loja. */
+function contactAction() {
   const number = store?.support_whatsapp || store?.whatsapp;
-  return number ? `https://wa.me/${encodeURIComponent(number)}?text=${encodeURIComponent(text)}` : null;
+  if (number) {
+    const text = encodeURIComponent("Olá! Vim do site e preciso falar com o suporte.");
+    return { href: `https://wa.me/${encodeURIComponent(number)}?text=${text}`, label: "Falar no WhatsApp", icon: "whatsapp", tab: true };
+  }
+  if (store?.phone) {
+    return { href: `tel:+55${store.phone.replace(/\D/g, "")}`, label: `Ligar: ${store.phone}`, icon: "phone", tab: false };
+  }
+  return null;
 }
 
 function fillTokens(text) {
@@ -48,8 +71,6 @@ function bubble(from, html) {
 function quickReplies() {
   const chips = [`<button class="chip" type="button" data-scroll-menu>${icon("search")}Ver cardápio</button>`];
   chips.push(...faq.map((f) => `<button class="chip" type="button" data-ask="${esc(f.id)}">${esc(f.label || f.question)}</button>`));
-  const wa = waLink("Olá! Vim do site e preciso falar com o suporte.");
-  if (wa) chips.push(`<a class="chip chip--wa" href="${wa}" target="_blank" rel="noopener">${icon("whatsapp")}Falar com atendente</a>`);
   return `<div class="chat__suggestions">${chips.join("")}</div>`;
 }
 
@@ -58,6 +79,15 @@ function renderLog() {
   if (!log) return;
   log.innerHTML = turns.map((t) => bubble(t.from, t.html)).join("") + quickReplies();
   log.scrollTop = log.scrollHeight;
+}
+
+function renderContactFooter() {
+  const footer = box().querySelector("[data-contact-footer]");
+  if (!footer) return;
+  const action = contactAction();
+  footer.innerHTML = action
+    ? `<a class="support__wa" href="${action.href}" ${action.tab ? 'target="_blank" rel="noopener"' : ""}>${icon(action.icon)}${esc(action.label)}</a>`
+    : "";
 }
 
 function askFaq(id) {
@@ -75,10 +105,12 @@ function render() {
       <h2 id="support-title">Suporte</h2>
       <button class="icon-btn" type="button" data-close-support aria-label="Fechar suporte">${icon("close")}</button>
     </div>
-    <div class="sheet__scroll"><div class="chat" data-chat-log></div></div>`;
+    <div class="sheet__scroll"><div class="chat" data-chat-log></div></div>
+    <div data-contact-footer></div>`;
 
   if (!turns.length) turns.push({ from: "bot", html: esc(GREETING) });
   renderLog();
+  renderContactFooter();
 
   el.querySelector("[data-chat-log]").addEventListener("click", (e) => {
     const ask = e.target.closest("[data-ask]");
@@ -126,7 +158,9 @@ export function initSupport(storeInfo) {
   store = storeInfo || null;
   fab()?.addEventListener("click", async () => {
     if (isOpen) return closeSupport();
-    if (!loaded) { await loadFaq(); loaded = true; render(); }
+    await loadFaqOnce();
+    await ensureStore();
+    render();
     openSupport();
   });
 }
