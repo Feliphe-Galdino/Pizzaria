@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: romera-romera-pizzaria
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT "app:create_app()"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: WHATSAPP_NUMBER
+        sync: false
+      - key: SUPPORT_WHATSAPP_NUMBER
+        sync: false
+      - key: DELIVERY_FEE_CENTS
+        value: "800"
+      - key: MIN_ORDER_CENTS
+        value: "3000"
