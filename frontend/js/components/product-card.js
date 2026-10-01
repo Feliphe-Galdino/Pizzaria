@@ -1,3 +1,4 @@
+import { comboItems } from "../core/combos.js";
 import { esc, formatMoney, icon } from "../core/format.js";
 import { TAGS } from "../core/labels.js";
 import { productMedia } from "./pizza-art.js";
@@ -40,7 +41,7 @@ export function productCard(product) {
 
 /** Cartão de combo: lista o que vem incluso e a economia em relação a pedir separado. */
 export function comboCard(product, { premium = false, savings = null } = {}) {
-  const items = product.ingredients.split(";").map((s) => s.trim()).filter(Boolean);
+  const items = comboItems(product);
   const flavors = product.sizes.map((s) => s.label).join(" ");
   const uniform = product.sizes.every((s) => s.price_cents === product.price_from_cents);
   const unavailable = !product.available;

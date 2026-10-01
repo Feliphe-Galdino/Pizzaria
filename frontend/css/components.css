@@ -128,7 +128,7 @@
 .field .hint { font-size: var(--fs-xs); color: var(--tinta-suave); }
 .input, .select, .textarea {
   width: 100%; min-height: 48px; padding: 10px 14px; border: 1.5px solid var(--linha); border-radius: 10px;
-  background: var(--papel); transition: border-color .2s, box-shadow .2s;
+  background: var(--papel); color: var(--tinta); transition: border-color .2s, box-shadow .2s;
 }
 .textarea { min-height: 84px; resize: vertical; }
 .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--trigo); box-shadow: 0 0 0 3px rgba(200,150,46,.25); }

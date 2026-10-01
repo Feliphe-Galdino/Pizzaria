@@ -165,12 +165,16 @@ const OTHER = {
   "combo-especial": () => comboArt("romera"),
 };
 
+// Conteúdo de uma ilustração sem a tag <svg> externa. Sem <svg> aninhado, regras de CSS como
+// ".thumb svg { width }" não alcançam as partes do desenho (todas usam o mesmo espaço 240×240).
+const svgContent = (svg) => svg.trim().replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+
 /** Combo: focaccia e pão de alho ao fundo, a pizza na frente. */
 function comboArt(pizzaKey) {
   return `<svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
-    <g transform="translate(-4 18) scale(.56)">${OTHER.focaccia()}</g>
-    <g transform="translate(110 10) scale(.56)">${OTHER["pao-alho"]()}</g>
-    <g transform="translate(46 78) scale(.62)">${pizzaSVG(pizzaKey, `combo-${pizzaKey}`)}</g>
+    <g transform="translate(-4 18) scale(.56)">${svgContent(OTHER.focaccia())}</g>
+    <g transform="translate(110 10) scale(.56)">${svgContent(OTHER["pao-alho"]())}</g>
+    <g transform="translate(46 78) scale(.62)">${svgContent(pizzaSVG(pizzaKey, `combo-${pizzaKey}`))}</g>
   </svg>`;
 }
 

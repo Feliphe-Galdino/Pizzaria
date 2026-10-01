@@ -81,6 +81,17 @@ class ApiTest(unittest.TestCase):
         self.client.patch(f"/api/admin/products/{p['id']}/availability", json={"available": True}, headers=self.auth)
         self.assertEqual(r.status_code, 409)
 
+    def test_combo_rejects_unavailable_flavor(self):
+        combo, _ = self.menu_item("combo-classico")
+        flavor, _ = self.menu_item("calabresa")
+        option = next(s for s in combo["sizes"] if s["label"] == flavor["name"])
+        body = self.order(items=[{"product_id": combo["id"], "size_id": option["id"], "quantity": 1}])
+        self.assertEqual(self.client.post("/api/orders/quote", json=body).status_code, 200)
+        self.client.patch(f"/api/admin/products/{flavor['id']}/availability", json={"available": False}, headers=self.auth)
+        r = self.client.post("/api/orders", json=body)
+        self.client.patch(f"/api/admin/products/{flavor['id']}/availability", json={"available": True}, headers=self.auth)
+        self.assertEqual(r.status_code, 409)
+
     def test_tracking_requires_matching_phone(self):
         code = self.client.post("/api/orders", json=self.order()).get_json()["code"]
         self.assertEqual(self.client.get(f"/api/orders/{code}?phone=11000000000").status_code, 404)

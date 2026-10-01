@@ -8,6 +8,7 @@ from flask import current_app
 from ..database import get_db, row, rows, transaction
 from ..errors import ApiError, ValidationError
 from ..validation import Validator
+from .catalog import COMBO_CATEGORY
 
 STATUSES = ["received", "preparing", "ready", "out_for_delivery", "completed", "canceled"]
 PHONE_RE = r"\(?\d{2}\)?\s?9?\d{4}-?\d{4}"
@@ -68,7 +69,7 @@ def price_items(items: list[dict]) -> tuple[list[dict], int]:
     lines, subtotal = [], 0
     for idx, item in enumerate(items):
         product = row(db.execute(
-            """SELECT p.* FROM products p JOIN categories c ON c.id = p.category_id
+            """SELECT p.*, c.slug AS category_slug FROM products p JOIN categories c ON c.id = p.category_id
                WHERE p.id = ? AND c.active = 1""", (item["product_id"],)))
         if not product:
             raise ApiError("Um dos produtos do carrinho não existe mais. Revise o carrinho.", 409, "product_missing")
@@ -79,6 +80,13 @@ def price_items(items: list[dict]) -> tuple[list[dict], int]:
                               (item["size_id"], product["id"])))
         if not size:
             raise ValidationError({f"items[{idx}].size_id": "Tamanho inválido para este produto."})
+        if product["category_slug"] == COMBO_CATEGORY:
+            flavor = row(db.execute(
+                """SELECT p.available FROM products p JOIN categories c ON c.id = p.category_id
+                   WHERE c.slug != ? AND p.name = ?""", (COMBO_CATEGORY, size["label"])))
+            if flavor and not flavor["available"]:
+                raise ApiError(f"A pizza {size['label']} do {product['name']} acabou de ficar indisponível. "
+                               "Escolha outro sabor para continuar.", 409, "product_unavailable")
 
         addon_ids = list(dict.fromkeys(item.get("addon_ids") or []))
         addons = []

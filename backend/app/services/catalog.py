@@ -3,7 +3,10 @@ from ..database import get_db, row, rows, transaction
 from ..errors import ApiError, ValidationError
 from ..validation import Validator, slugify
 
-ALLOWED_TAGS = {"vegetariano", "picante", "novo", "mais-pedido", "sem-lactose"}
+# "premium" não vira selo no site: marca o combo que usa o cartão especial (lousa e dourado).
+ALLOWED_TAGS = {"vegetariano", "picante", "novo", "mais-pedido", "sem-lactose", "premium"}
+# Nos combos, cada opção de "tamanho" é um sabor de pizza (label = nome do produto).
+COMBO_CATEGORY = "combos"
 URL_PATTERN = r"(https://|/)[^\s\"'<>]{1,500}"
 
 
@@ -170,7 +173,7 @@ def _validate_product(data, partial=False):
          .list("tags", _tag_item, required=False, max_len=5)
          .bool("available", default=True)
          .int("position", required=False, min_value=0, max_value=9999, default=0)
-         .list("sizes", _validate_size, min_len=1, max_len=6)
+         .list("sizes", _validate_size, min_len=1, max_len=12)
          .done())
     if "tags" in v:
         v["tags"] = ",".join(v["tags"])

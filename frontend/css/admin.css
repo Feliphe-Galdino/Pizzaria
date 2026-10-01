@@ -51,6 +51,11 @@ body.admin { background: var(--massa); }
 .checks label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1.5px solid var(--linha); border-radius: var(--r-pill); background: var(--papel); font-size: var(--fs-sm); cursor: pointer; }
 .checks input { accent-color: var(--molho); }
 .size-row { display: grid; grid-template-columns: 1.1fr 1fr 1fr 44px; gap: var(--space-2); align-items: end; }
+.combo-form__group { margin-top: var(--space-2); font-size: var(--fs-xs); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); }
+.combo-preview { display: grid; gap: 4px; padding: var(--space-3) var(--space-4); border-radius: var(--r-card); background: var(--manjericao-claro); color: var(--manjericao); font-size: var(--fs-sm); }
+.combo-preview.is-warning { background: var(--molho-claro); color: var(--molho-escuro); }
+.combo-preview.is-empty { background: var(--massa-2); color: var(--tinta-suave); }
+.combo-preview .hint { color: var(--tinta-suave); }
 .art-preview { display: flex; gap: var(--space-3); align-items: center; }
 .art-preview .thumb { width: 72px; height: 72px; }
 .art-preview .thumb svg { width: 64px; }

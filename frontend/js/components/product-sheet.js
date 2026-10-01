@@ -1,4 +1,5 @@
 import * as cart from "../core/cart.js";
+import { COMBO_CATEGORY, comboItems } from "../core/combos.js";
 import { esc, formatMoney, icon } from "../core/format.js";
 import { openDialog, toast } from "../core/ui.js";
 import { tagList } from "./product-card.js";
@@ -17,18 +18,20 @@ function optionBox({ type, name, value, checked, main, sub = "", price = "", dis
   </label>`;
 }
 
-export function openProductSheet(product, category, { onClose } = {}) {
+export function openProductSheet(product, category, { onClose, disabledSizes = new Set() } = {}) {
   const el = dialog();
   const addons = category?.addons || [];
   const groups = {};
   const extras = [];
   for (const a of addons) (a.exclusive_group ? (groups[a.exclusive_group] ||= []) : extras).push(a);
-  const unavailable = !product.available;
   // Nos combos, as "opções de tamanho" são os sabores de pizza que entram no combo.
-  const isCombo = category?.slug === "combos";
+  const isCombo = category?.slug === COMBO_CATEGORY;
+  const selectable = product.sizes.filter((s) => !disabledSizes.has(s.id));
+  const unavailable = !product.available || !selectable.length;
   const samePrice = product.sizes.every((s) => s.price_cents === product.sizes[0].price_cents);
-  const defaultSize = product.sizes[!isCombo && product.sizes.length > 2 ? product.sizes.length - 1 : 0];
-  const includes = isCombo ? product.ingredients.split(";").map((s) => s.trim()).filter(Boolean).join(" · ") : product.ingredients;
+  const defaultSize = isCombo ? selectable[0] || product.sizes[0] : product.sizes[product.sizes.length > 2 ? product.sizes.length - 1 : 0];
+  const includes = isCombo ? comboItems(product).join(" · ") : product.ingredients;
+  const tags = tagList(product.tags, { limit: 5 });
 
   el.innerHTML = `
     <div class="sheet__scroll">
@@ -37,7 +40,7 @@ export function openProductSheet(product, category, { onClose } = {}) {
       ${unavailable ? `<p class="alert pd__unavailable">${icon("alert")}Este item está indisponível hoje. Que tal escolher outro sabor?</p>` : ""}
       <form class="pd__body" data-pd-form novalidate>
         <div class="pd__head">
-          ${product.tags.length ? `<div class="product-card__tags">${tagList(product.tags, { limit: 5 })}</div>` : ""}
+          ${tags ? `<div class="product-card__tags">${tags}</div>` : ""}
           <h2 id="pd-title">${esc(product.name)}</h2>
           <p class="pd__desc">${esc(product.description)}</p>
           ${includes ? `<p class="pd__ingredients"><strong>${isCombo ? "Inclui:" : "Ingredientes:"}</strong> ${esc(includes)}</p>` : ""}
@@ -48,7 +51,8 @@ export function openProductSheet(product, category, { onClose } = {}) {
           <div class="options${isCombo ? "" : " options--row"}">
             ${product.sizes.map((s) => optionBox({
               type: "radio", name: "size", value: s.id, checked: s.id === defaultSize.id,
-              main: esc(s.label), sub: esc(s.detail), price: isCombo && samePrice ? "" : formatMoney(s.price_cents), disabled: unavailable,
+              main: esc(s.label), sub: isCombo ? (disabledSizes.has(s.id) ? "Indisponível hoje" : "") : esc(s.detail),
+              price: isCombo && samePrice ? "" : formatMoney(s.price_cents), disabled: unavailable || disabledSizes.has(s.id),
             })).join("")}
           </div>
         </fieldset>

@@ -1,7 +1,7 @@
 import { api } from "../core/api.js";
 import { esc, icon } from "../core/format.js";
 import { setLoading, showFieldErrors } from "../core/ui.js";
-import { renderAddons, renderCategories, renderProducts } from "./catalog-views.js";
+import { renderAddons, renderCategories, renderCombos, renderProducts } from "./catalog-views.js";
 import { renderOrders, stopOrders } from "./orders-view.js";
 import { getToken, onSessionExpired, setToken } from "./session.js";
 
@@ -9,6 +9,7 @@ const root = document.getElementById("admin-root");
 const ROUTES = {
   pedidos: ["Pedidos", renderOrders],
   produtos: ["Produtos", renderProducts],
+  combos: ["Combos", renderCombos],
   categorias: ["Categorias", renderCategories],
   adicionais: ["Adicionais", renderAddons],
 };

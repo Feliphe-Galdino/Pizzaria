@@ -1,5 +1,6 @@
 import { api } from "./core/api.js";
 import * as cart from "./core/cart.js";
+import { COMBO_CATEGORY, PREMIUM_TAG, comboSavings, flavorProduct } from "./core/combos.js";
 import { esc, formatMoney, icon, plural } from "./core/format.js";
 import { ORDER_STATUS } from "./core/labels.js";
 import { toast } from "./core/ui.js";
@@ -13,9 +14,6 @@ import { initSupport } from "./components/support-widget.js";
 const menuEl = document.querySelector("[data-menu]");
 const navEl = document.querySelector("[data-category-nav]");
 const PRODUCT_HASH = /^#\/produto\/([a-z0-9-]+)$/;
-const COMBOS = "combos";
-// Acompanhamentos fixos de todo combo; usados só para calcular a economia mostrada no cartão.
-const COMBO_SIDES = ["pao-de-alho-da-casa", "focaccia-de-alecrim"];
 
 let menu = { categories: [] };
 let openedByClick = false;
@@ -31,28 +29,22 @@ function findProduct(slug) {
 }
 
 /* ---------- Cardápio ---------- */
-/** Economia do combo frente aos itens avulsos (pizza grande do sabor + acompanhamentos), pelo sabor que economiza menos. */
-function comboSavings(combo) {
-  const others = menu.categories.filter((c) => c.slug !== COMBOS).flatMap((c) => c.products);
-  const sides = COMBO_SIDES.map((slug) => others.find((p) => p.slug === slug));
-  if (sides.includes(undefined)) return null;
-  const sidesCents = sides.reduce((n, p) => n + p.price_from_cents, 0);
-  const options = combo.sizes.map((s) => {
-    const pizza = others.find((p) => p.name === s.label);
-    if (!pizza) return null;
-    const separate = sidesCents + Math.max(...pizza.sizes.map((x) => x.price_cents));
-    return { separate, save: separate - s.price_cents };
-  });
-  if (!options.length || options.includes(null)) return null;
-  const least = options.reduce((a, b) => (b.save < a.save ? b : a));
-  if (least.save <= 0) return null;
-  return { ...least, varies: options.some((o) => o.save !== least.save) };
-}
+const nonComboProducts = () => menu.categories.filter((c) => c.slug !== COMBO_CATEGORY).flatMap((c) => c.products);
 
 function categoryCards(category) {
-  if (category.slug !== COMBOS) return category.products.map(productCard);
-  const cheapest = Math.min(...category.products.map((p) => p.price_from_cents));
-  return category.products.map((p) => comboCard(p, { premium: p.price_from_cents > cheapest, savings: comboSavings(p) }));
+  if (category.slug !== COMBO_CATEGORY) return category.products.map(productCard);
+  const others = nonComboProducts();
+  return category.products.map((p) => {
+    const savings = comboSavings(p, others);
+    return comboCard(p, { premium: p.tags.includes(PREMIUM_TAG), savings: savings?.save > 0 ? savings : null });
+  });
+}
+
+/** Opções de pizza de um combo cujo sabor está indisponível hoje no cardápio. */
+function unavailableComboOptions(product, category) {
+  if (category.slug !== COMBO_CATEGORY) return new Set();
+  const others = nonComboProducts();
+  return new Set(product.sizes.filter((s) => flavorProduct(s, others)?.available === false).map((s) => s.id));
 }
 
 function renderMenu() {
@@ -68,7 +60,7 @@ function renderMenu() {
     <section class="menu-category" id="cat-${esc(c.slug)}" aria-labelledby="cat-title-${esc(c.slug)}" data-category="${esc(c.slug)}">
       <div class="menu-category__head"><h3 id="cat-title-${esc(c.slug)}">${esc(c.name)}</h3></div>
       ${c.description ? `<p class="menu-category__desc">${esc(c.description)}</p>` : ""}
-      <ul class="product-grid${c.slug === COMBOS ? " combo-grid" : ""}">${categoryCards(c).map((card) => `<li>${card}</li>`).join("")}</ul>
+      <ul class="product-grid${c.slug === COMBO_CATEGORY ? " combo-grid" : ""}">${categoryCards(c).map((card) => `<li>${card}</li>`).join("")}</ul>
     </section>`).join("") +
     `<div class="menu-empty" data-no-results hidden>${icon("search")}<h3>Nada encontrado</h3><p>Tente outro sabor ou ingrediente, como “calabresa” ou “chocolate”.</p><button class="btn btn--ghost btn--sm" type="button" data-clear-search>Limpar busca</button></div>`;
 
@@ -121,6 +113,7 @@ function openFromHash() {
   const found = findProduct(match[1]);
   if (!found) { toast("Esse produto não está mais no cardápio", { type: "error" }); return; }
   openProductSheet(found.product, found.category, {
+    disabledSizes: unavailableComboOptions(found.product, found.category),
     onClose: () => {
       if (!PRODUCT_HASH.test(location.hash)) return;
       if (openedByClick) history.back();

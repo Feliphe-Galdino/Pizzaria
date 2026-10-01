@@ -4,6 +4,7 @@ from flask import current_app
 from werkzeug.security import generate_password_hash
 
 from .database import get_db, transaction
+from .services.catalog import COMBO_CATEGORY
 from .validation import slugify
 
 P = "Broto", "4 fatias"
@@ -62,21 +63,23 @@ PRODUCTS = [
     ("bebidas", "Água mineral", "Com ou sem gás.", "", "agua", "", [("Garrafa", "500 ml", 500)]),
 ]
 
-COMBOS_CATEGORY = ("Combos", "combos",
+MENU_VERSION = 2  # suba ao criar uma nova migração em seed_if_empty
+
+COMBOS_CATEGORY = ("Combos", COMBO_CATEGORY,
                    "Pão de alho, focaccia e pizza grande juntos, por um preço menor do que pedir cada item separado.")
 
-# (nome, descrição, itens inclusos separados por ";", arte, categoria da pizza, preço)
-# A pizza à escolha vira as opções de "tamanho" do combo, então carrinho, pedido e
-# painel tratam o combo como qualquer outro produto.
+# (nome, descrição, itens inclusos separados por ";", arte, etiquetas, categoria da pizza, preço)
+# A pizza à escolha vira as opções de "tamanho" do combo (sabor no label, tamanho da pizza
+# no detail), então carrinho, pedido e painel tratam o combo como qualquer outro produto.
 COMBOS = [
     ("Combo Clássico",
      "Pão de alho, focaccia e a pizza clássica que você preferir. O jeito mais em conta de pedir para 3 ou 4 pessoas.",
      "Pão de alho da casa (6 pedaços); Focaccia de alecrim (meia, serve 2); Pizza clássica grande à escolha (8 fatias)",
-     "combo-classico", "classicas", 8990),
+     "combo-classico", "", "classicas", 8990),
     ("Combo Especial",
      "Uma pizza especial da casa com pão de alho e focaccia para abrir a noite. Para quando a ocasião pede algo a mais.",
      "Pão de alho da casa (6 pedaços); Focaccia de alecrim (meia, serve 2); Pizza especial da casa grande à escolha (8 fatias)",
-     "combo-especial", "especiais", 10990),
+     "combo-especial", "premium", "especiais", 10990),
 ]
 
 # (nome, preço, grupo exclusivo, categorias)
@@ -121,7 +124,7 @@ def _insert_combos(db):
     db.execute("UPDATE categories SET position = position + 1")
     cat_id = db.execute("INSERT INTO categories (name, slug, description, position) VALUES (?, ?, ?, 0)",
                         (name, slug, desc)).lastrowid
-    for pos, (pname, pdesc, items, art, pizza_cat, price) in enumerate(COMBOS):
+    for pos, (pname, pdesc, items, art, tags, pizza_cat, price) in enumerate(COMBOS):
         flavors = [r[0] for r in db.execute(
             """SELECT p.name FROM products p JOIN categories c ON c.id = p.category_id
                WHERE c.slug = ? ORDER BY p.position, p.name""", (pizza_cat,))]
@@ -129,12 +132,12 @@ def _insert_combos(db):
         if not flavors or db.execute("SELECT 1 FROM products WHERE slug = ?", (pslug,)).fetchone():
             continue
         pid = db.execute(
-            """INSERT INTO products (category_id, name, slug, description, ingredients, art, position)
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (cat_id, pname, pslug, pdesc, items, art, pos)).lastrowid
+            """INSERT INTO products (category_id, name, slug, description, ingredients, art, tags, position)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (cat_id, pname, pslug, pdesc, items, art, tags, pos)).lastrowid
         db.executemany(
-            "INSERT INTO product_sizes (product_id, label, detail, price_cents, position) VALUES (?, ?, '', ?, ?)",
-            [(pid, flavor, price, i) for i, flavor in enumerate(flavors)])
+            "INSERT INTO product_sizes (product_id, label, detail, price_cents, position) VALUES (?, ?, ?, ?, ?)",
+            [(pid, flavor, G[0], price, i) for i, flavor in enumerate(flavors)])
 
 
 def ensure_admin(email: str, password: str):
@@ -154,10 +157,15 @@ def seed_if_empty():
         if not db.execute("SELECT 1 FROM categories LIMIT 1").fetchone():
             _seed_menu(db)
         # user_version marca migrações de cardápio já aplicadas, para bancos criados antes delas.
-        # Roda uma vez só: se o administrador apagar os combos depois, eles não voltam.
-        if db.execute("PRAGMA user_version").fetchone()[0] < 1:
+        # Cada uma roda uma vez só: se o administrador apagar os combos depois, eles não voltam.
+        version = db.execute("PRAGMA user_version").fetchone()[0]
+        if version < 1:
             _insert_combos(db)
-            db.execute("PRAGMA user_version = 1")
+        if version < 2:
+            # O estilo do cartão do combo passou a ser escolhido no painel (etiqueta "premium").
+            db.execute("UPDATE products SET tags = 'premium' WHERE slug = 'combo-especial' AND tags = ''")
+        if version < MENU_VERSION:
+            db.execute(f"PRAGMA user_version = {MENU_VERSION}")
         db.commit()
     except Exception:
         db.rollback()
