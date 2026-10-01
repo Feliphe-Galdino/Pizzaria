@@ -4,6 +4,7 @@ from flask import current_app
 from werkzeug.security import generate_password_hash
 
 from .database import get_db, transaction
+from .validation import slugify
 
 P = "Broto", "4 fatias"
 M = "Média", "6 fatias"
@@ -61,6 +62,23 @@ PRODUCTS = [
     ("bebidas", "Água mineral", "Com ou sem gás.", "", "agua", "", [("Garrafa", "500 ml", 500)]),
 ]
 
+COMBOS_CATEGORY = ("Combos", "combos",
+                   "Pão de alho, focaccia e pizza grande juntos, por um preço menor do que pedir cada item separado.")
+
+# (nome, descrição, itens inclusos separados por ";", arte, categoria da pizza, preço)
+# A pizza à escolha vira as opções de "tamanho" do combo, então carrinho, pedido e
+# painel tratam o combo como qualquer outro produto.
+COMBOS = [
+    ("Combo Clássico",
+     "Pão de alho, focaccia e a pizza clássica que você preferir. O jeito mais em conta de pedir para 3 ou 4 pessoas.",
+     "Pão de alho da casa (6 pedaços); Focaccia de alecrim (meia, serve 2); Pizza clássica grande à escolha (8 fatias)",
+     "combo-classico", "classicas", 8990),
+    ("Combo Especial",
+     "Uma pizza especial da casa com pão de alho e focaccia para abrir a noite. Para quando a ocasião pede algo a mais.",
+     "Pão de alho da casa (6 pedaços); Focaccia de alecrim (meia, serve 2); Pizza especial da casa grande à escolha (8 fatias)",
+     "combo-especial", "especiais", 10990),
+]
+
 # (nome, preço, grupo exclusivo, categorias)
 ADDONS = [
     ("Borda de Catupiry", 1200, "Borda", ["classicas", "especiais"]),
@@ -74,27 +92,49 @@ ADDONS = [
 ]
 
 
-def seed_menu():
-    with transaction() as db:
-        cat_ids = {}
-        for pos, (name, slug, desc) in enumerate(CATEGORIES):
-            cur = db.execute("INSERT INTO categories (name, slug, description, position) VALUES (?, ?, ?, ?)",
-                             (name, slug, desc, pos))
-            cat_ids[slug] = cur.lastrowid
-        from .validation import slugify
-        for pos, (cat, name, desc, ingr, art, tags, sizes) in enumerate(PRODUCTS):
-            cur = db.execute(
-                """INSERT INTO products (category_id, name, slug, description, ingredients, art, tags, position)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                (cat_ids[cat], name, slugify(name), desc, ingr, art, tags, pos))
-            db.executemany(
-                "INSERT INTO product_sizes (product_id, label, detail, price_cents, position) VALUES (?, ?, ?, ?, ?)",
-                [(cur.lastrowid, label, detail, price, i) for i, (label, detail, price) in enumerate(sizes)])
-        for pos, (name, price, group, cats) in enumerate(ADDONS):
-            cur = db.execute("INSERT INTO addons (name, price_cents, exclusive_group, position) VALUES (?, ?, ?, ?)",
-                             (name, price, group, pos))
-            db.executemany("INSERT INTO addon_categories (addon_id, category_id) VALUES (?, ?)",
-                           [(cur.lastrowid, cat_ids[c]) for c in cats])
+def _seed_menu(db):
+    cat_ids = {}
+    for pos, (name, slug, desc) in enumerate(CATEGORIES):
+        cur = db.execute("INSERT INTO categories (name, slug, description, position) VALUES (?, ?, ?, ?)",
+                         (name, slug, desc, pos))
+        cat_ids[slug] = cur.lastrowid
+    for pos, (cat, name, desc, ingr, art, tags, sizes) in enumerate(PRODUCTS):
+        cur = db.execute(
+            """INSERT INTO products (category_id, name, slug, description, ingredients, art, tags, position)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (cat_ids[cat], name, slugify(name), desc, ingr, art, tags, pos))
+        db.executemany(
+            "INSERT INTO product_sizes (product_id, label, detail, price_cents, position) VALUES (?, ?, ?, ?, ?)",
+            [(cur.lastrowid, label, detail, price, i) for i, (label, detail, price) in enumerate(sizes)])
+    for pos, (name, price, group, cats) in enumerate(ADDONS):
+        cur = db.execute("INSERT INTO addons (name, price_cents, exclusive_group, position) VALUES (?, ?, ?, ?)",
+                         (name, price, group, pos))
+        db.executemany("INSERT INTO addon_categories (addon_id, category_id) VALUES (?, ?)",
+                       [(cur.lastrowid, cat_ids[c]) for c in cats])
+
+
+def _insert_combos(db):
+    """Cria a categoria Combos no topo do cardápio, com os sabores atuais de cada categoria de pizza."""
+    name, slug, desc = COMBOS_CATEGORY
+    if db.execute("SELECT 1 FROM categories WHERE slug = ?", (slug,)).fetchone():
+        return
+    db.execute("UPDATE categories SET position = position + 1")
+    cat_id = db.execute("INSERT INTO categories (name, slug, description, position) VALUES (?, ?, ?, 0)",
+                        (name, slug, desc)).lastrowid
+    for pos, (pname, pdesc, items, art, pizza_cat, price) in enumerate(COMBOS):
+        flavors = [r[0] for r in db.execute(
+            """SELECT p.name FROM products p JOIN categories c ON c.id = p.category_id
+               WHERE c.slug = ? ORDER BY p.position, p.name""", (pizza_cat,))]
+        pslug = slugify(pname)
+        if not flavors or db.execute("SELECT 1 FROM products WHERE slug = ?", (pslug,)).fetchone():
+            continue
+        pid = db.execute(
+            """INSERT INTO products (category_id, name, slug, description, ingredients, art, position)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (cat_id, pname, pslug, pdesc, items, art, pos)).lastrowid
+        db.executemany(
+            "INSERT INTO product_sizes (product_id, label, detail, price_cents, position) VALUES (?, ?, '', ?, ?)",
+            [(pid, flavor, price, i) for i, flavor in enumerate(flavors)])
 
 
 def ensure_admin(email: str, password: str):
@@ -107,8 +147,21 @@ def ensure_admin(email: str, password: str):
 
 def seed_if_empty():
     db = get_db()
-    if not db.execute("SELECT 1 FROM categories LIMIT 1").fetchone():
-        seed_menu()
+    # IMMEDIATE trava a escrita já no início: com vários workers do gunicorn subindo juntos,
+    # o segundo espera o primeiro terminar e encontra tudo pronto, em vez de duplicar dados.
+    db.execute("BEGIN IMMEDIATE")
+    try:
+        if not db.execute("SELECT 1 FROM categories LIMIT 1").fetchone():
+            _seed_menu(db)
+        # user_version marca migrações de cardápio já aplicadas, para bancos criados antes delas.
+        # Roda uma vez só: se o administrador apagar os combos depois, eles não voltam.
+        if db.execute("PRAGMA user_version").fetchone()[0] < 1:
+            _insert_combos(db)
+            db.execute("PRAGMA user_version = 1")
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     cfg = current_app.config
     if cfg["ADMIN_EMAIL"] and cfg["ADMIN_PASSWORD"] and not db.execute("SELECT 1 FROM users LIMIT 1").fetchone():
         ensure_admin(cfg["ADMIN_EMAIL"], cfg["ADMIN_PASSWORD"])

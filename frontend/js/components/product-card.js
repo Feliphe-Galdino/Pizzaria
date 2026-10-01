@@ -37,3 +37,36 @@ export function productCard(product) {
     </div>
   </article>`;
 }
+
+/** Cartão de combo: lista o que vem incluso e a economia em relação a pedir separado. */
+export function comboCard(product, { premium = false, savings = null } = {}) {
+  const items = product.ingredients.split(";").map((s) => s.trim()).filter(Boolean);
+  const flavors = product.sizes.map((s) => s.label).join(" ");
+  const uniform = product.sizes.every((s) => s.price_cents === product.price_from_cents);
+  const unavailable = !product.available;
+
+  return `
+  <article class="product-card combo-card combo-card--${premium ? "premium" : "value"}${unavailable ? " is-unavailable" : ""}" data-search="${esc(`${product.name} ${product.description} ${product.ingredients} ${flavors}`)}">
+    <div class="combo-card__media lousa framed">
+      ${productMedia(product)}
+      ${unavailable ? `<span class="sold-out">Indisponível hoje</span>` : ""}
+    </div>
+    <div class="product-card__body">
+      <span class="combo-card__badge">${icon(premium ? "spark" : "star")}${premium ? "Experiência especial" : "Melhor custo-benefício"}</span>
+      <h4 class="product-card__title"><a href="#/produto/${esc(product.slug)}" data-product-link="${esc(product.slug)}">${esc(product.name)}</a></h4>
+      <p class="product-card__desc">${esc(product.description)}</p>
+      <ul class="combo-card__items">${items.map((i) => `<li>${icon("check")}<span>${esc(i)}</span></li>`).join("")}</ul>
+      ${savings ? `<p class="combo-card__save">Você economiza ${formatMoney(savings.save)}${savings.varies ? " ou mais" : ""}</p>` : ""}
+      <div class="product-card__foot">
+        <p class="price">
+          <small>${savings ? `Separado <s>${formatMoney(savings.separate)}</s>` : uniform ? "Preço do combo" : "a partir de"}</small>
+          <strong>${formatMoney(product.price_from_cents)}</strong>
+        </p>
+        <button class="add-btn" type="button" data-quick-add="${esc(product.slug)}"
+          aria-label="${unavailable ? `${esc(product.name)} indisponível` : `Montar ${esc(product.name)}`}" ${unavailable ? "disabled" : ""}>
+          ${icon("plus")}
+        </button>
+      </div>
+    </div>
+  </article>`;
+}

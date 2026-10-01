@@ -5,7 +5,7 @@ import { ORDER_STATUS } from "./core/labels.js";
 import { toast } from "./core/ui.js";
 import { initCart, openCart, setStore } from "./components/cart-drawer.js";
 import { pizzaSVG } from "./components/pizza-art.js";
-import { productCard } from "./components/product-card.js";
+import { comboCard, productCard } from "./components/product-card.js";
 import { openProductSheet } from "./components/product-sheet.js";
 import { renderStore } from "./components/store-info.js";
 import { initSupport } from "./components/support-widget.js";
@@ -13,6 +13,9 @@ import { initSupport } from "./components/support-widget.js";
 const menuEl = document.querySelector("[data-menu]");
 const navEl = document.querySelector("[data-category-nav]");
 const PRODUCT_HASH = /^#\/produto\/([a-z0-9-]+)$/;
+const COMBOS = "combos";
+// Acompanhamentos fixos de todo combo; usados só para calcular a economia mostrada no cartão.
+const COMBO_SIDES = ["pao-de-alho-da-casa", "focaccia-de-alecrim"];
 
 let menu = { categories: [] };
 let openedByClick = false;
@@ -28,6 +31,30 @@ function findProduct(slug) {
 }
 
 /* ---------- Cardápio ---------- */
+/** Economia do combo frente aos itens avulsos (pizza grande do sabor + acompanhamentos), pelo sabor que economiza menos. */
+function comboSavings(combo) {
+  const others = menu.categories.filter((c) => c.slug !== COMBOS).flatMap((c) => c.products);
+  const sides = COMBO_SIDES.map((slug) => others.find((p) => p.slug === slug));
+  if (sides.includes(undefined)) return null;
+  const sidesCents = sides.reduce((n, p) => n + p.price_from_cents, 0);
+  const options = combo.sizes.map((s) => {
+    const pizza = others.find((p) => p.name === s.label);
+    if (!pizza) return null;
+    const separate = sidesCents + Math.max(...pizza.sizes.map((x) => x.price_cents));
+    return { separate, save: separate - s.price_cents };
+  });
+  if (!options.length || options.includes(null)) return null;
+  const least = options.reduce((a, b) => (b.save < a.save ? b : a));
+  if (least.save <= 0) return null;
+  return { ...least, varies: options.some((o) => o.save !== least.save) };
+}
+
+function categoryCards(category) {
+  if (category.slug !== COMBOS) return category.products.map(productCard);
+  const cheapest = Math.min(...category.products.map((p) => p.price_from_cents));
+  return category.products.map((p) => comboCard(p, { premium: p.price_from_cents > cheapest, savings: comboSavings(p) }));
+}
+
 function renderMenu() {
   menuEl.setAttribute("aria-busy", "false");
   if (!menu.categories.length) {
@@ -41,7 +68,7 @@ function renderMenu() {
     <section class="menu-category" id="cat-${esc(c.slug)}" aria-labelledby="cat-title-${esc(c.slug)}" data-category="${esc(c.slug)}">
       <div class="menu-category__head"><h3 id="cat-title-${esc(c.slug)}">${esc(c.name)}</h3></div>
       ${c.description ? `<p class="menu-category__desc">${esc(c.description)}</p>` : ""}
-      <ul class="product-grid">${c.products.map((p) => `<li>${productCard(p)}</li>`).join("")}</ul>
+      <ul class="product-grid${c.slug === COMBOS ? " combo-grid" : ""}">${categoryCards(c).map((card) => `<li>${card}</li>`).join("")}</ul>
     </section>`).join("") +
     `<div class="menu-empty" data-no-results hidden>${icon("search")}<h3>Nada encontrado</h3><p>Tente outro sabor ou ingrediente, como “calabresa” ou “chocolate”.</p><button class="btn btn--ghost btn--sm" type="button" data-clear-search>Limpar busca</button></div>`;
 

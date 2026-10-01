@@ -101,32 +101,6 @@
 
     <div class="frieze" role="presentation"></div>
 
-    <section class="menu" id="cardapio" aria-labelledby="menu-title">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <h2 id="menu-title">Cardápio</h2>
-            <p>Toque em um item para escolher tamanho, borda e adicionais.</p>
-          </div>
-          <div class="search">
-            <label class="visually-hidden" for="menu-search">Buscar no cardápio</label>
-            <svg class="icon"><use href="#i-search"/></svg>
-            <input class="input" id="menu-search" type="search" placeholder="Buscar sabor ou ingrediente" autocomplete="off" />
-          </div>
-        </div>
-
-        <nav class="category-nav" aria-label="Categorias do cardápio">
-          <ul class="category-nav__list" data-category-nav></ul>
-        </nav>
-
-        <div data-menu aria-live="polite" aria-busy="true">
-          <div class="product-grid">
-            <div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="story" id="nossa-historia" aria-labelledby="story-title">
       <div class="container story__grid">
         <figure class="story__photo">
@@ -141,6 +115,37 @@
             <li><svg class="icon"><use href="#i-flame"/></svg><span><strong>Forno bem quente.</strong> A borda dourada que você reconhece no primeiro pedaço.</span></li>
             <li><svg class="icon"><use href="#i-leaf"/></svg><span><strong>Ingredientes do dia.</strong> Manjericão, tomate e rúcula comprados frescos.</span></li>
           </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="menu" id="cardapio" aria-labelledby="menu-title">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 id="menu-title">Cardápio</h2>
+            <p>Toque em um item para escolher tamanho, borda e adicionais.</p>
+          </div>
+          <div class="search">
+            <label class="visually-hidden" for="menu-search">Buscar no cardápio</label>
+            <svg class="icon"><use href="#i-search"/></svg>
+            <input class="input" id="menu-search" type="search" placeholder="Buscar sabor ou ingrediente" autocomplete="off" />
+          </div>
+        </div>
+
+        <aside class="menu-note" aria-label="Sobre a nossa massa">
+          <svg class="icon"><use href="#i-wheat"/></svg>
+          <p><strong>Massa da padaria, aproveitada no mesmo dia.</strong> As pizzas clássicas, o pão de alho e a focaccia usam a massa de pão excedente da nossa produção: a mesma fermentação natural de 48 horas dos nossos pães, sempre usada no dia em que foi feita. Em vez de ser descartada, ela vira pizza: menos desperdício de alimentos e um preço mais justo, com a mesma qualidade.</p>
+        </aside>
+
+        <nav class="category-nav" aria-label="Categorias do cardápio">
+          <ul class="category-nav__list" data-category-nav></ul>
+        </nav>
+
+        <div data-menu aria-live="polite" aria-busy="true">
+          <div class="product-grid">
+            <div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div><div class="skeleton skeleton--card"></div>
+          </div>
         </div>
       </div>
     </section>

@@ -24,7 +24,11 @@ export function openProductSheet(product, category, { onClose } = {}) {
   const extras = [];
   for (const a of addons) (a.exclusive_group ? (groups[a.exclusive_group] ||= []) : extras).push(a);
   const unavailable = !product.available;
-  const defaultSize = product.sizes[product.sizes.length > 2 ? product.sizes.length - 1 : 0];
+  // Nos combos, as "opções de tamanho" são os sabores de pizza que entram no combo.
+  const isCombo = category?.slug === "combos";
+  const samePrice = product.sizes.every((s) => s.price_cents === product.sizes[0].price_cents);
+  const defaultSize = product.sizes[!isCombo && product.sizes.length > 2 ? product.sizes.length - 1 : 0];
+  const includes = isCombo ? product.ingredients.split(";").map((s) => s.trim()).filter(Boolean).join(" · ") : product.ingredients;
 
   el.innerHTML = `
     <div class="sheet__scroll">
@@ -36,15 +40,15 @@ export function openProductSheet(product, category, { onClose } = {}) {
           ${product.tags.length ? `<div class="product-card__tags">${tagList(product.tags, { limit: 5 })}</div>` : ""}
           <h2 id="pd-title">${esc(product.name)}</h2>
           <p class="pd__desc">${esc(product.description)}</p>
-          ${product.ingredients ? `<p class="pd__ingredients"><strong>Ingredientes:</strong> ${esc(product.ingredients)}</p>` : ""}
+          ${includes ? `<p class="pd__ingredients"><strong>${isCombo ? "Inclui:" : "Ingredientes:"}</strong> ${esc(includes)}</p>` : ""}
         </div>
 
         <fieldset class="pd__group">
-          <legend class="pd__group-title">${product.sizes.length > 1 ? "Tamanho" : "Porção"} <span>${product.sizes.length > 1 ? "Escolha 1" : ""}</span></legend>
-          <div class="options options--row">
+          <legend class="pd__group-title">${isCombo ? "Sua pizza" : product.sizes.length > 1 ? "Tamanho" : "Porção"} <span>${product.sizes.length > 1 ? "Escolha 1" : ""}</span></legend>
+          <div class="options${isCombo ? "" : " options--row"}">
             ${product.sizes.map((s) => optionBox({
               type: "radio", name: "size", value: s.id, checked: s.id === defaultSize.id,
-              main: esc(s.label), sub: esc(s.detail), price: formatMoney(s.price_cents), disabled: unavailable,
+              main: esc(s.label), sub: esc(s.detail), price: isCombo && samePrice ? "" : formatMoney(s.price_cents), disabled: unavailable,
             })).join("")}
           </div>
         </fieldset>

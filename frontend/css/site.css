@@ -51,6 +51,10 @@
 .search .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--tinta-suave); pointer-events: none; }
 .search .input { padding-left: 44px; border-radius: var(--r-pill); }
 
+.menu-note { display: flex; gap: var(--space-3); align-items: flex-start; max-width: 78ch; margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); border: 1.5px dashed var(--trigo); border-radius: var(--r-card); background: var(--papel); color: var(--tinta-suave); font-size: var(--fs-sm); }
+.menu-note .icon { color: var(--trigo-texto); margin-top: 2px; }
+.menu-note strong { color: var(--molho); }
+
 .category-nav { position: sticky; top: calc(var(--header-h) + 10px); z-index: 20; margin: 0 -1rem var(--space-5); padding: var(--space-3) 1rem; background: color-mix(in srgb, var(--massa) 92%, transparent); backdrop-filter: blur(8px); }
 .category-nav__list { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; margin: 0; padding: 2px; list-style: none; scroll-snap-type: x proximity; }
 .category-nav__list::-webkit-scrollbar { display: none; }
@@ -78,6 +82,38 @@
   .sold-out { right: 8px; bottom: 8px; }
   .product-card.is-framed-media .product-card__media::after { inset: 6px; background-size: 26px; }
 }
+
+/* ========== Combos ========== */
+.product-grid.combo-grid { grid-template-columns: 1fr; }
+@media (min-width: 720px) { .product-grid.combo-grid { grid-template-columns: repeat(2, 1fr); } }
+.product-card.combo-card { flex-direction: column; border-width: 2px; }
+.combo-card__media { position: relative; display: grid; place-items: center; aspect-ratio: 2 / 1; overflow: hidden; }
+.combo-card__media svg { width: auto; height: 100%; }
+.combo-card__media.framed::after { inset: 8px; background-size: 30px, 30px, 30px, 30px; }
+.combo-card.is-unavailable .combo-card__media > svg { filter: grayscale(1) brightness(.7); }
+.combo-card .product-card__desc { display: block; }
+.combo-card__badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 700; }
+.combo-card__badge .icon { width: 14px; height: 14px; }
+.combo-card__items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: var(--fs-sm); }
+.combo-card__items li { display: flex; gap: 8px; align-items: flex-start; }
+.combo-card__items .icon { width: 18px; height: 18px; margin-top: 2px; }
+.combo-card__save { align-self: flex-start; padding: 4px 12px; border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 700; }
+
+/* Combo Clássico: custo-benefício, com a economia em destaque */
+.combo-card--value { border-color: var(--trigo-claro); }
+.combo-card--value .combo-card__badge { background: var(--molho); color: var(--papel); }
+.combo-card--value .combo-card__items .icon { color: var(--manjericao); }
+.combo-card--value .combo-card__save { background: var(--manjericao-claro); color: var(--manjericao); }
+
+/* Combo Especial: lousa e dourado, como a fachada */
+.combo-card--premium { background: var(--lousa); color: var(--massa); border-color: var(--trigo); }
+.combo-card--premium .combo-card__media { border-bottom: 1px solid rgba(224,169,72,.35); }
+.combo-card--premium .product-card__title { color: var(--trigo-claro); }
+.combo-card--premium .product-card__desc, .combo-card--premium .price small { color: #E6DACB; }
+.combo-card--premium .price strong { color: var(--trigo-claro); }
+.combo-card--premium .combo-card__badge { background: var(--trigo-claro); color: var(--lousa); }
+.combo-card--premium .combo-card__items .icon { color: var(--trigo-claro); }
+.combo-card--premium .combo-card__save { border: 1px solid var(--trigo); color: var(--trigo-claro); }
 
 /* ========== Nossa história ========== */
 .story { background: var(--massa-2); padding: var(--space-7) 0; }

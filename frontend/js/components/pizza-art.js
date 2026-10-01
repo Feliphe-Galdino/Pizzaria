@@ -161,7 +161,18 @@ const OTHER = {
     <rect x="108" y="22" width="24" height="18" rx="4" fill="#4E7A3E"/><path d="M104 40H136C140 56 152 62 152 80V196C152 202 148 206 142 206H98C92 206 88 202 88 196V80C88 62 100 56 104 40Z" fill="#CFE6EC" opacity=".85"/>
     <rect x="88" y="104" width="64" height="52" fill="#FFF8EC"/><text x="120" y="136" text-anchor="middle" font-family="Cinzel,Georgia,serif" font-weight="700" font-size="14" fill="#9B2226">ÁGUA</text>
     <path d="M96 84V190" stroke="#fff" stroke-width="5" opacity=".6" stroke-linecap="round"/></svg>`,
+  "combo-classico": () => comboArt("calabresa"),
+  "combo-especial": () => comboArt("romera"),
 };
+
+/** Combo: focaccia e pão de alho ao fundo, a pizza na frente. */
+function comboArt(pizzaKey) {
+  return `<svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+    <g transform="translate(-4 18) scale(.56)">${OTHER.focaccia()}</g>
+    <g transform="translate(110 10) scale(.56)">${OTHER["pao-alho"]()}</g>
+    <g transform="translate(46 78) scale(.62)">${pizzaSVG(pizzaKey, `combo-${pizzaKey}`)}</g>
+  </svg>`;
+}
 
 export const ART_OPTIONS = [
   ...Object.keys(PRESETS),
